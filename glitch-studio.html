@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLITCH STUDIO</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0a;
+  --surface: #141414;
+  --surface2: #1e1e1e;
+  --surface3: #242424;
+  --border: #2a2a2a;
+  --border2: #333;
+  --text: #d0d0d0;
+  --text-dim: #555;
+  --text-mid: #888;
+  --accent: #00ff88;
+  --accent2: #ff0055;
+  --accent3: #0088ff;
+  --panel: 240px;
+  --header: 46px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', 'SF Mono', 'Consolas', monospace;
+  font-size: 11px;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+/* ─── HEADER ─── */
+#header {
+  height: var(--header);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 8px;
+  flex-shrink: 0;
+  z-index: 50;
+}
+
+#logo {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: var(--accent);
+  margin-right: 6px;
+}
+
+.sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border2);
+  flex-shrink: 0;
+}
+
+.hbtn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text-mid);
+  padding: 4px 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.hbtn:hover { border-color: var(--accent); color: var(--accent); }
+.hbtn.red:hover { border-color: var(--accent2); color: var(--accent2); }
+.hbtn.blue { border-color: var(--accent3); color: var(--accent3); }
+.hbtn.blue:hover { background: var(--accent3); color: #000; }
+.hbtn.green { border-color: var(--accent); color: var(--accent); }
+.hbtn.green:hover { background: var(--accent); color: #000; }
+.hbtn:disabled { opacity: 0.25; cursor: not-allowed; pointer-events: none; }
+
+.spacer { flex: 1; }
+
+/* ─── LAYOUT ─── */
+#layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ─── PANELS ─── */
+.panel {
+  width: var(--panel);
+  background: var(--surface);
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+#left-panel { border-right: 1px solid var(--border); }
+#right-panel { border-left: 1px solid var(--border); }
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.psec { border-bottom: 1px solid var(--border); }
+
+.psec-head {
+  padding: 9px 12px;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: color 0.12s;
+}
+.psec-head:hover { color: var(--text-mid); }
+.psec-head .arr { font-size: 8px; }
+
+.psec-body { padding: 6px 12px 12px; }
+.psec.closed .psec-body { display: none; }
+.psec.closed .arr::after { content: '▸'; }
+.psec:not(.closed) .arr::after { content: '▾'; }
+
+/* ─── TOOL GRID ─── */
+.tool-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.tbtn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 7px 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-align: center;
+  transition: all 0.12s;
+}
+.tbtn:hover { border-color: var(--border2); color: var(--text-mid); }
+.tbtn.on { border-color: var(--accent); color: var(--accent); background: rgba(0,255,136,0.04); }
+
+/* ─── SLIDER ROW ─── */
+.srow { margin-bottom: 11px; }
+.srow:last-child { margin-bottom: 0; }
+
+.slabel {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  color: var(--text-dim);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+.slabel .val { color: var(--text-mid); min-width: 24px; text-align: right; }
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 2px;
+  background: var(--border2);
+  outline: none;
+  cursor: pointer;
+  border-radius: 0;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  background: var(--accent);
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.1s;
+}
+input[type="range"]:hover::-webkit-slider-thumb { background: #fff; }
+
+/* ─── COLOR INPUTS ─── */
+.crow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+.crow:last-child { margin-bottom: 0; }
+.clabel {
+  flex: 1;
+  color: var(--text-dim);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+input[type="color"] {
+  width: 36px;
+  height: 20px;
+  border: 1px solid var(--border2);
+  background: none;
+  cursor: pointer;
+  padding: 1px;
+}
+
+select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 10px;
+  cursor: pointer;
+  outline: none;
+  margin-bottom: 2px;
+}
+select:focus { border-color: var(--accent); }
+select option { background: var(--surface2); }
+
+/* ─── UPLOAD BTN ─── */
+.upbtn {
+  display: block;
+  width: 100%;
+  background: var(--surface2);
+  border: 1px dashed var(--border2);
+  color: var(--text-dim);
+  padding: 9px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-align: center;
+  transition: all 0.12s;
+  margin-bottom: 10px;
+}
+.upbtn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ─── PRESET LIST ─── */
+.preset-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+.preset-item:hover { border-color: var(--border2); }
+.preset-item:last-child { margin-bottom: 0; }
+.preset-name { flex: 1; font-size: 10px; color: var(--text); }
+.preset-item:hover .preset-name { color: var(--accent); }
+.preset-del {
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.preset-del:hover { color: var(--accent2); }
+.no-presets { color: var(--text-dim); font-size: 10px; }
+
+/* ─── CANVAS AREA ─── */
+#canvas-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #060606;
+  overflow: hidden;
+  position: relative;
+}
+
+#canvas-wrap {
+  position: relative;
+  box-shadow: 0 0 60px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04);
+}
+
+#disp-canvas {
+  display: block;
+  cursor: crosshair;
+}
+
+#src-canvas { display: none; }
+#work-canvas { display: none; }
+
+#coords {
+  position: absolute;
+  bottom: 10px;
+  right: 14px;
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  pointer-events: none;
+}
+
+#size-badge {
+  position: absolute;
+  bottom: 10px;
+  left: 14px;
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  pointer-events: none;
+}
+
+/* ─── MODAL ─── */
+#modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+#modal-bg.show { display: flex; }
+
+#modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  padding: 22px 24px;
+  min-width: 280px;
+}
+#modal h3 {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+#modal-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 11px;
+  margin-bottom: 14px;
+  outline: none;
+}
+#modal-input:focus { border-color: var(--accent); }
+
+.modal-row {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ─── PROCESSING OVERLAY ─── */
+#proc-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 300;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+}
+#proc-overlay.show { display: flex; }
+
+/* ─── GLITCH SEED BTN ─── */
+.seed-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+}
+.seed-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text-dim);
+  padding: 4px 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  transition: all 0.12s;
+  flex-shrink: 0;
+}
+.seed-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ─── ACTIVE EFFECTS INDICATOR ─── */
+.effect-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  background: var(--accent);
+  border-radius: 50%;
+  margin-left: 6px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.effect-dot.on { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <span id="logo">GLITCH STUDIO</span>
+  <div class="sep"></div>
+  <button class="hbtn" id="btn-undo" disabled>↩ UNDO</button>
+  <button class="hbtn" id="btn-redo" disabled>↪ REDO</button>
+  <button class="hbtn red" id="btn-reset">✕ RESET</button>
+  <div class="sep"></div>
+  <button class="hbtn" id="btn-preset-save">⊕ 프리셋 저장</button>
+  <div class="spacer"></div>
+  <button class="hbtn blue" id="btn-png">↓ PNG</button>
+  <button class="hbtn green" id="btn-svg">↓ SVG</button>
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+  <!-- LEFT PANEL -->
+  <div class="panel" id="left-panel">
+
+    <!-- CANVAS SIZE -->
+    <div class="psec" id="sec-size">
+      <div class="psec-head" data-sec="size">CANVAS SIZE <span class="arr"></span></div>
+      <div class="psec-body">
+        <select id="size-sel">
+          <option value="1080,1080">1 : 1 — 1080 × 1080</option>
+          <option value="1080,1527">A4 세로 — 1080 × 1527</option>
+          <option value="1527,1080">A4 가로 — 1527 × 1080</option>
+          <option value="1440,1080">4 : 3 — 1440 × 1080</option>
+          <option value="1080,1440">3 : 4 — 1080 × 1440</option>
+          <option value="1080,1350">4 : 5 — 1080 × 1350</option>
+          <option value="1350,1080">5 : 4 — 1350 × 1080</option>
+          <option value="1080,1920">9 : 16 — 1080 × 1920</option>
+          <option value="1920,1080">16 : 9 — 1920 × 1080</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- TOOLS -->
+    <div class="psec" id="sec-tools">
+      <div class="psec-head" data-sec="tools">TOOLS <span class="arr"></span></div>
+      <div class="psec-body">
+        <div class="tool-grid">
+          <button class="tbtn on" data-tool="pencil">✏ PENCIL</button>
+          <button class="tbtn" data-tool="eraser">◻ ERASER</button>
+          <button class="tbtn" data-tool="line">╱ LINE</button>
+          <button class="tbtn" data-tool="rect">□ RECT</button>
+          <button class="tbtn" data-tool="circle">○ CIRCLE</button>
+          <button class="tbtn" data-tool="fill">▣ FILL</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BRUSH -->
+    <div class="psec" id="sec-brush">
+      <div class="psec-head" data-sec="brush">BRUSH <span class="arr"></span></div>
+      <div class="psec-body">
+        <div class="crow">
+          <span class="clabel">STROKE COLOR</span>
+          <input type="color" id="brush-color" value="#ffffff">
+        </div>
+        <div class="crow">
+          <span class="clabel">FILL COLOR</span>
+          <input type="color" id="fill-color" value="#ffffff">
+          <label style="display:flex;align-items:center;gap:4px;color:var(--text-dim);font-size:9px;cursor:pointer;">
+            <input type="checkbox" id="fill-check"> FILL
+          </label>
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>SIZE</span><span class="val" id="v-brush-size">5</span></div>
+          <input type="range" id="brush-size" min="1" max="150" value="5">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>OPACITY</span><span class="val" id="v-brush-opacity">100</span></div>
+          <input type="range" id="brush-opacity" min="1" max="100" value="100">
+        </div>
+      </div>
+    </div>
+
+    <!-- IMAGE -->
+    <div class="psec" id="sec-image">
+      <div class="psec-head" data-sec="image">IMAGE <span class="arr"></span></div>
+      <div class="psec-body">
+        <label class="upbtn" for="img-upload">↑ 이미지 업로드</label>
+        <input type="file" id="img-upload" accept="image/*" style="display:none">
+        <div class="srow">
+          <div class="slabel"><span>SCALE</span><span class="val" id="v-img-scale">100</span><span style="color:var(--text-dim)">%</span></div>
+          <input type="range" id="img-scale" min="5" max="200" value="100">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>POSITION X</span><span class="val" id="v-img-x">50</span></div>
+          <input type="range" id="img-x" min="0" max="100" value="50">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>POSITION Y</span><span class="val" id="v-img-y">50</span></div>
+          <input type="range" id="img-y" min="0" max="100" value="50">
+        </div>
+        <button class="upbtn" id="btn-stamp" style="margin-bottom:0">▼ STAMP TO CANVAS</button>
+      </div>
+    </div>
+
+    <!-- PRESETS -->
+    <div class="psec" id="sec-presets">
+      <div class="psec-head" data-sec="presets">PRESETS <span class="arr"></span></div>
+      <div class="psec-body">
+        <div id="preset-list"></div>
+        <div class="no-presets" id="no-presets">저장된 프리셋 없음</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CANVAS AREA -->
+  <div id="canvas-area">
+    <canvas id="src-canvas"></canvas>
+    <canvas id="work-canvas"></canvas>
+    <div id="canvas-wrap">
+      <canvas id="disp-canvas"></canvas>
+    </div>
+    <div id="size-badge"></div>
+    <div id="coords"></div>
+  </div>
+
+  <!-- RIGHT PANEL: EFFECTS -->
+  <div class="panel" id="right-panel">
+
+    <!-- SYMMETRY -->
+    <div class="psec">
+      <div class="psec-head" data-sec="sym">SYMMETRY <span class="effect-dot" id="dot-sym"></span><span class="arr"></span></div>
+      <div class="psec-body">
+        <div class="srow">
+          <div class="slabel"><span>MIRROR H</span><span class="val" id="v-mirrorH">OFF</span></div>
+          <input type="range" class="efx" data-k="mirrorH" min="0" max="1" step="1" value="0">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>MIRROR V</span><span class="val" id="v-mirrorV">OFF</span></div>
+          <input type="range" class="efx" data-k="mirrorV" min="0" max="1" step="1" value="0">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>KALEIDOSCOPE</span><span class="val" id="v-kaleidoscope">0</span></div>
+          <input type="range" class="efx" data-k="kaleidoscope" min="0" max="8" step="1" value="0">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>GRID TILE</span><span class="val" id="v-gridTile">1</span></div>
+          <input type="range" class="efx" data-k="gridTile" min="1" max="8" step="1" value="1">
+        </div>
+      </div>
+    </div>
+
+    <!-- DISTORTION -->
+    <div class="psec">
+      <div class="psec-head" data-sec="dist">DISTORTION <span class="effect-dot" id="dot-dist"></span><span class="arr"></span></div>
+      <div class="psec-body">
+        <div class="srow">
+          <div class="slabel"><span>WAVE X</span><span class="val" id="v-waveX">0</span></div>
+          <input type="range" class="efx" data-k="waveX" min="0" max="100" value="0">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>WAVE Y</span><span class="val" id="v-waveY">0</span></div>
+          <input type="range" class="efx" data-k="waveY" min="0" max="100" value="0">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>FREQUENCY</span><span class="val" id="v-waveFreq">5</span></div>
+          <input type="range" class="efx" data-k="waveFreq" min="1" max="40" value="5">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>NOISE DISPLACE</span><span class="val" id="v-noiseDisplace">0</span></div>
+          <input type="range" class="efx" data-k="noiseDisplace" min="0" max="100" value="0">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>PIXEL SCATTER</span><span class="val" id="v-scatter">0</span></div>
+          <input type="range" class="efx" data-k="scatter" min="0" max="100" value="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- GLITCH -->
+    <div class="psec">
+      <div class="psec-head" data-sec="glitch">GLITCH <span class="effect-dot" id="dot-glitch"></span><span class="arr"></span></div>
+      <div class="psec-body">
+        <div class="srow">
+          <div class="slabel"><span>RGB SPLIT</span><span class="val" id="v-rgbSplit">0</span></div>
+          <input type="range" class="efx" data-k="rgbSplit" min="0" max="100" value="0">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>RGB ANGLE</span><span class="val" id="v-rgbAngle">0</span><span style="color:var(--text-dim)">°</span></div>
+          <input type="range" class="efx" data-k="rgbAngle" min="0" max="360" value="0">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>PIXEL SLICE</span><span class="val" id="v-pixelSlice">0</span></div>
+          <input type="range" class="efx" data-k="pixelSlice" min="0" max="100" value="0">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>SCANLINES</span><span class="val" id="v-scanlines">0</span></div>
+          <input type="range" class="efx" data-k="scanlines" min="0" max="100" value="0">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>STATIC NOISE</span><span class="val" id="v-staticNoise">0</span></div>
+          <input type="range" class="efx" data-k="staticNoise" min="0" max="100" value="0">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>DATABEND</span><span class="val" id="v-databend">0</span></div>
+          <input type="range" class="efx" data-k="databend" min="0" max="100" value="0">
+        </div>
+        <div class="seed-row">
+          <div style="flex:1;color:var(--text-dim);font-size:9px;letter-spacing:0.1em">SEED</div>
+          <span style="color:var(--text-mid);font-size:10px" id="seed-display">0</span>
+          <button class="seed-btn" id="btn-new-seed">⟳ NEW</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLOR -->
+    <div class="psec">
+      <div class="psec-head" data-sec="color">COLOR <span class="effect-dot" id="dot-color"></span><span class="arr"></span></div>
+      <div class="psec-body">
+        <div class="srow">
+          <div class="slabel"><span>HUE SHIFT</span><span class="val" id="v-hueShift">0</span><span style="color:var(--text-dim)">°</span></div>
+          <input type="range" class="efx" data-k="hueShift" min="0" max="360" value="0">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>SATURATION</span><span class="val" id="v-saturation">100</span></div>
+          <input type="range" class="efx" data-k="saturation" min="0" max="300" value="100">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>BRIGHTNESS</span><span class="val" id="v-brightness">100</span></div>
+          <input type="range" class="efx" data-k="brightness" min="0" max="300" value="100">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>CONTRAST</span><span class="val" id="v-contrast">100</span></div>
+          <input type="range" class="efx" data-k="contrast" min="0" max="300" value="100">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>INVERT</span><span class="val" id="v-invert">0</span></div>
+          <input type="range" class="efx" data-k="invert" min="0" max="100" value="0">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>BIT CRUSH</span><span class="val" id="v-bitCrush">0</span></div>
+          <input type="range" class="efx" data-k="bitCrush" min="0" max="7" step="1" value="0">
+        </div>
+        <div class="srow">
+          <div class="slabel"><span>DUOTONE</span><span class="val" id="v-duotone">0</span></div>
+          <input type="range" class="efx" data-k="duotone" min="0" max="100" value="0">
+        </div>
+        <div class="crow" style="margin-top:4px">
+          <span class="clabel">TONE A</span>
+          <input type="color" id="duotone-a" value="#00ff88">
+        </div>
+        <div class="crow">
+          <span class="clabel">TONE B</span>
+          <input type="color" id="duotone-b" value="#ff0055">
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal-bg">
+  <div id="modal">
+    <h3>PRESET SAVE</h3>
+    <input type="text" id="modal-input" placeholder="프리셋 이름 입력..." maxlength="32">
+    <div class="modal-row">
+      <button class="hbtn" id="modal-cancel">CANCEL</button>
+      <button class="hbtn green" id="modal-ok">SAVE</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROCESSING -->
+<div id="proc-overlay">EXPORTING...</div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+const S = {
+  W: 1080, H: 1080,
+  tool: 'pencil',
+  strokeColor: '#ffffff',
+  fillColor: '#ffffff',
+  useFill: false,
+  brushSize: 5,
+  brushOpacity: 1,
+  drawing: false,
+  lastX: 0, lastY: 0,
+  shapeStart: null,
+  shapePre: null,
+  fitScale: 1,
+  seed: 0,
+  pendingImg: null,
+
+  fx: {
+    mirrorH: 0, mirrorV: 0, kaleidoscope: 0, gridTile: 1,
+    waveX: 0, waveY: 0, waveFreq: 5, noiseDisplace: 0, scatter: 0,
+    rgbSplit: 0, rgbAngle: 0, pixelSlice: 0, scanlines: 0, staticNoise: 0, databend: 0,
+    hueShift: 0, saturation: 100, brightness: 100, contrast: 100,
+    invert: 0, bitCrush: 0, duotone: 0,
+  },
+  duoA: [0, 255, 136],
+  duoB: [255, 0, 85],
+
+  undoStack: [],
+  redoStack: [],
+  presets: [],
+};
+
+// ═══════════════════════════════════════════════════
+// CANVAS ELEMENTS
+// ═══════════════════════════════════════════════════
+const srcCvs   = document.getElementById('src-canvas');
+const srcCtx   = srcCvs.getContext('2d', { willReadFrequently: true });
+const workCvs  = document.getElementById('work-canvas');
+const workCtx  = workCvs.getContext('2d', { willReadFrequently: true });
+const dispCvs  = document.getElementById('disp-canvas');
+const dispCtx  = dispCvs.getContext('2d');
+const area     = document.getElementById('canvas-area');
+const wrap     = document.getElementById('canvas-wrap');
+
+// ═══════════════════════════════════════════════════
+// PERLIN NOISE
+// ═══════════════════════════════════════════════════
+const perm = (() => {
+  const p = Array.from({ length: 256 }, (_, i) => i);
+  for (let i = 255; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [p[i], p[j]] = [p[j], p[i]];
+  }
+  const out = new Uint8Array(512);
+  for (let i = 0; i < 512; i++) out[i] = p[i & 255];
+  return out;
+})();
+
+function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+function lerpN(a, b, t) { return a + t * (b - a); }
+function grad2(h, x, y) {
+  switch (h & 3) {
+    case 0: return  x + y;
+    case 1: return -x + y;
+    case 2: return  x - y;
+    case 3: return -x - y;
+  }
+}
+function noise(x, y) {
+  const X = Math.floor(x) & 255, Y = Math.floor(y) & 255;
+  x -= Math.floor(x); y -= Math.floor(y);
+  const u = fade(x), v = fade(y);
+  const a = perm[X] + Y, b = perm[X + 1] + Y;
+  return lerpN(
+    lerpN(grad2(perm[a],   x,   y), grad2(perm[b],   x-1, y),   u),
+    lerpN(grad2(perm[a+1], x,   y-1), grad2(perm[b+1], x-1, y-1), u),
+    v
+  );
+}
+
+// ═══════════════════════════════════════════════════
+// SEEDED RANDOM
+// ═══════════════════════════════════════════════════
+function mkRand(seed) {
+  let s = (seed * 9999) | 0;
+  return () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; };
+}
+
+// ═══════════════════════════════════════════════════
+// INIT / FIT CANVAS
+// ═══════════════════════════════════════════════════
+function initCanvas(w, h) {
+  S.W = w; S.H = h;
+  srcCvs.width = w; srcCvs.height = h;
+  srcCtx.fillStyle = '#000';
+  srcCtx.fillRect(0, 0, w, h);
+  S.undoStack = []; S.redoStack = [];
+  fitCanvas();
+  pushUndo();
+  applyFx();
+}
+
+function fitCanvas() {
+  const margin = 48;
+  const aw = area.clientWidth  - margin;
+  const ah = area.clientHeight - margin;
+  S.fitScale = Math.min(aw / S.W, ah / S.H, 1);
+  const dw = Math.floor(S.W * S.fitScale);
+  const dh = Math.floor(S.H * S.fitScale);
+  dispCvs.width = dw; dispCvs.height = dh;
+  workCvs.width = dw; workCvs.height = dh;
+  document.getElementById('size-badge').textContent = `${S.W} × ${S.H}`;
+}
+
+function toSrcCoords(ex, ey) {
+  const r = dispCvs.getBoundingClientRect();
+  return [(ex - r.left) / S.fitScale, (ey - r.top) / S.fitScale];
+}
+
+// ═══════════════════════════════════════════════════
+// UNDO / REDO
+// ═══════════════════════════════════════════════════
+function pushUndo() {
+  const snap = srcCtx.getImageData(0, 0, S.W, S.H);
+  S.undoStack.push(snap);
+  if (S.undoStack.length > 20) S.undoStack.shift();
+  S.redoStack = [];
+  refreshUndoBtns();
+}
+
+function undo() {
+  if (S.undoStack.length <= 1) return;
+  S.redoStack.push(S.undoStack.pop());
+  srcCtx.putImageData(S.undoStack[S.undoStack.length - 1], 0, 0);
+  applyFx(); refreshUndoBtns();
+}
+
+function redo() {
+  if (!S.redoStack.length) return;
+  const d = S.redoStack.pop();
+  S.undoStack.push(d);
+  srcCtx.putImageData(d, 0, 0);
+  applyFx(); refreshUndoBtns();
+}
+
+function refreshUndoBtns() {
+  document.getElementById('btn-undo').disabled = S.undoStack.length <= 1;
+  document.getElementById('btn-redo').disabled = !S.redoStack.length;
+}
+
+function resetCanvas() {
+  if (!confirm('캔버스를 초기화하시겠습니까? (실행 취소 불가)')) return;
+  srcCtx.fillStyle = '#000';
+  srcCtx.fillRect(0, 0, S.W, S.H);
+  S.undoStack = []; S.redoStack = [];
+  pushUndo(); applyFx();
+}
+
+// ═══════════════════════════════════════════════════
+// DRAWING
+// ═══════════════════════════════════════════════════
+function prepCtx() {
+  srcCtx.strokeStyle = S.strokeColor;
+  srcCtx.fillStyle   = S.useFill ? S.fillColor : S.strokeColor;
+  srcCtx.lineWidth   = S.brushSize;
+  srcCtx.lineCap     = 'round';
+  srcCtx.lineJoin    = 'round';
+  srcCtx.globalAlpha = S.brushOpacity;
+  srcCtx.globalCompositeOperation = 'source-over';
+  return srcCtx;
+}
+
+function startDraw(ex, ey) {
+  S.drawing = true;
+  const [x, y] = toSrcCoords(ex, ey);
+  S.lastX = x; S.lastY = y; S.shapeStart = [x, y];
+
+  if (['rect','circle','line'].includes(S.tool)) {
+    S.shapePre = srcCtx.getImageData(0, 0, S.W, S.H);
+  }
+
+  if (S.tool === 'pencil') {
+    const c = prepCtx();
+    c.beginPath(); c.arc(x, y, S.brushSize / 2, 0, Math.PI * 2); c.fill();
+    applyFx();
+  }
+  if (S.tool === 'eraser') {
+    srcCtx.globalAlpha = S.brushOpacity;
+    srcCtx.strokeStyle = '#000'; srcCtx.fillStyle = '#000';
+    srcCtx.lineWidth = S.brushSize; srcCtx.lineCap = 'round';
+    srcCtx.globalCompositeOperation = 'source-over';
+    srcCtx.beginPath(); srcCtx.arc(x, y, S.brushSize / 2, 0, Math.PI * 2); srcCtx.fill();
+    applyFx();
+  }
+  if (S.tool === 'fill') {
+    floodFill(Math.round(x), Math.round(y));
+    pushUndo(); applyFx();
+    S.drawing = false;
+  }
+}
+
+function moveDraw(ex, ey) {
+  const r = dispCvs.getBoundingClientRect();
+  const rx = Math.round((ex - r.left) / S.fitScale);
+  const ry = Math.round((ey - r.top)  / S.fitScale);
+  document.getElementById('coords').textContent = `${rx} , ${ry}`;
+
+  if (!S.drawing) return;
+  const [x, y] = toSrcCoords(ex, ey);
+
+  if (S.tool === 'pencil') {
+    const c = prepCtx();
+    c.beginPath(); c.moveTo(S.lastX, S.lastY); c.lineTo(x, y); c.stroke();
+    S.lastX = x; S.lastY = y; applyFx();
+
+  } else if (S.tool === 'eraser') {
+    srcCtx.globalAlpha = S.brushOpacity;
+    srcCtx.strokeStyle = '#000'; srcCtx.lineWidth = S.brushSize;
+    srcCtx.lineCap = 'round'; srcCtx.globalCompositeOperation = 'source-over';
+    srcCtx.beginPath(); srcCtx.moveTo(S.lastX, S.lastY); srcCtx.lineTo(x, y); srcCtx.stroke();
+    S.lastX = x; S.lastY = y; applyFx();
+
+  } else if (['line','rect','circle'].includes(S.tool)) {
+    srcCtx.putImageData(S.shapePre, 0, 0);
+    const c = prepCtx();
+    const [sx, sy] = S.shapeStart;
+    c.beginPath();
+    if (S.tool === 'line') {
+      c.moveTo(sx, sy); c.lineTo(x, y); c.stroke();
+    } else if (S.tool === 'rect') {
+      if (S.useFill) c.fillRect(sx, sy, x - sx, y - sy);
+      c.strokeRect(sx, sy, x - sx, y - sy);
+    } else if (S.tool === 'circle') {
+      const rx = (x - sx) / 2, ry = (y - sy) / 2;
+      c.ellipse(sx + rx, sy + ry, Math.abs(rx), Math.abs(ry), 0, 0, Math.PI * 2);
+      if (S.useFill) c.fill();
+      c.stroke();
+    }
+    applyFx();
+  }
+}
+
+function endDraw() {
+  if (!S.drawing) return;
+  S.drawing = false;
+  srcCtx.globalAlpha = 1;
+  srcCtx.globalCompositeOperation = 'source-over';
+  pushUndo();
+}
+
+// ═══════════════════════════════════════════════════
+// FLOOD FILL
+// ═══════════════════════════════════════════════════
+function floodFill(sx, sy) {
+  const img = srcCtx.getImageData(0, 0, S.W, S.H);
+  const d = img.data, W = S.W, H = S.H;
+  const idx = (x, y) => (y * W + x) * 4;
+  const get = (x, y) => [d[idx(x,y)], d[idx(x,y)+1], d[idx(x,y)+2], d[idx(x,y)+3]];
+  const tgt = get(sx, sy);
+  const fill = hexToRGB(S.strokeColor);
+  if (colMatch(tgt, [...fill, 255])) return;
+  const stack = [[sx, sy]];
+  const visited = new Uint8Array(W * H);
+  while (stack.length) {
+    const [x, y] = stack.pop();
+    if (x < 0 || x >= W || y < 0 || y >= H) continue;
+    if (visited[y * W + x]) continue;
+    visited[y * W + x] = 1;
+    if (!colMatch(get(x, y), tgt)) continue;
+    const i = idx(x, y);
+    d[i]=fill[0]; d[i+1]=fill[1]; d[i+2]=fill[2]; d[i+3]=255;
+    stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+  }
+  srcCtx.putImageData(img, 0, 0);
+}
+
+function colMatch([r1,g1,b1,a1],[r2,g2,b2,a2], tol=32) {
+  return Math.abs(r1-r2)<tol && Math.abs(g1-g2)<tol && Math.abs(b1-b2)<tol && Math.abs(a1-a2)<tol;
+}
+
+// ═══════════════════════════════════════════════════
+// EFFECTS PIPELINE
+// ═══════════════════════════════════════════════════
+let fxTimer = null;
+function applyFx() {
+  clearTimeout(fxTimer);
+  fxTimer = setTimeout(_runFx, 16);
+}
+
+function _runFx() {
+  const W = workCvs.width, H = workCvs.height;
+  // Scale src → work (fast GPU blit)
+  workCtx.drawImage(srcCvs, 0, 0, W, H);
+
+  // Draw pending image overlay on work canvas
+  if (S.pendingImg) {
+    const scale = document.getElementById('img-scale').value / 100 * S.fitScale;
+    const imgW = S.pendingImg.width * scale;
+    const imgH = S.pendingImg.height * scale;
+    const posX = (document.getElementById('img-x').value / 100) * (W - imgW);
+    const posY = (document.getElementById('img-y').value / 100) * (H - imgH);
+    workCtx.globalAlpha = S.brushOpacity;
+    workCtx.drawImage(S.pendingImg, posX, posY, imgW, imgH);
+    workCtx.globalAlpha = 1;
+  }
+
+  let img = workCtx.getImageData(0, 0, W, H);
+
+  const fx = S.fx;
+  const rand = mkRand(S.seed);
+
+  // 1. Symmetry
+  img = fxSymmetry(img, W, H);
+
+  // 2. Distortion
+  const needDist = fx.waveX||fx.waveY||fx.noiseDisplace||fx.scatter;
+  if (needDist) img = fxDistort(img, W, H, rand);
+
+  // 3. RGB Split
+  if (fx.rgbSplit > 0) img = fxRGBSplit(img, W, H);
+
+  // 4. Pixel Slice
+  if (fx.pixelSlice > 0) img = fxPixelSlice(img, W, H, rand);
+
+  // 5. Databend
+  if (fx.databend > 0) img = fxDatabend(img, W, H, rand);
+
+  // 6. Scanlines
+  if (fx.scanlines > 0) img = fxScanlines(img, W, H);
+
+  // 7. Static Noise
+  if (fx.staticNoise > 0) img = fxNoise(img, W, H, rand);
+
+  // 8. HSL + Brightness/Contrast
+  if (fx.hueShift||fx.saturation!==100||fx.brightness!==100||fx.contrast!==100)
+    img = fxHSLBC(img, W, H);
+
+  // 9. Invert
+  if (fx.invert > 0) img = fxInvert(img, W, H);
+
+  // 10. Bit Crush
+  if (fx.bitCrush > 0) img = fxBitCrush(img, W, H);
+
+  // 11. Duotone
+  if (fx.duotone > 0) img = fxDuotone(img, W, H);
+
+  dispCtx.putImageData(img, 0, 0);
+  updateDots();
+}
+
+// ── Helpers ──
+function copyImg(src) {
+  return new ImageData(new Uint8ClampedArray(src.data), src.width, src.height);
+}
+function clamp(v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
+
+// ── Symmetry ──
+function fxSymmetry(img, W, H) {
+  const fx = S.fx;
+  let d = new Uint8ClampedArray(img.data);
+
+  if (fx.mirrorH) {
+    for (let y = 0; y < H; y++)
+      for (let x = W >> 1; x < W; x++) {
+        const di = (y*W+x)*4, si = (y*W+(W-1-x))*4;
+        d[di]=d[si]; d[di+1]=d[si+1]; d[di+2]=d[si+2]; d[di+3]=d[si+3];
+      }
+  }
+  if (fx.mirrorV) {
+    for (let y = H >> 1; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        const di = (y*W+x)*4, si = ((H-1-y)*W+x)*4;
+        d[di]=d[si]; d[di+1]=d[si+1]; d[di+2]=d[si+2]; d[di+3]=d[si+3];
+      }
+  }
+
+  if (fx.gridTile > 1) {
+    const n = fx.gridTile;
+    const tw = Math.floor(W / n), th = Math.floor(H / n);
+    const tile = new Uint8ClampedArray(tw * th * 4);
+    for (let y = 0; y < th; y++)
+      for (let x = 0; x < tw; x++) {
+        const si = (y*W+x)*4, di = (y*tw+x)*4;
+        tile[di]=img.data[si]; tile[di+1]=img.data[si+1];
+        tile[di+2]=img.data[si+2]; tile[di+3]=img.data[si+3];
+      }
+    d.fill(0);
+    for (let ty = 0; ty < n; ty++)
+      for (let tx = 0; tx < n; tx++) {
+        const flip = (tx + ty) % 2 === 1;
+        for (let y = 0; y < th; y++)
+          for (let x = 0; x < tw; x++) {
+            const sx = flip ? tw-1-x : x, sy = flip ? th-1-y : y;
+            const si = (sy*tw+sx)*4;
+            const dx = tx*tw+x, dy = ty*th+y;
+            if (dx >= W || dy >= H) continue;
+            const di = (dy*W+dx)*4;
+            d[di]=tile[si]; d[di+1]=tile[si+1]; d[di+2]=tile[si+2]; d[di+3]=tile[si+3];
+          }
+      }
+  }
+
+  if (fx.kaleidoscope > 0) {
+    const segs = Math.max(2, fx.kaleidoscope * 2);
+    const step = (Math.PI * 2) / segs;
+    const cx = W / 2, cy = H / 2;
+    const res = new Uint8ClampedArray(d);
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        const dx = x - cx, dy = y - cy;
+        let angle = Math.atan2(dy, dx);
+        const radius = Math.sqrt(dx*dx + dy*dy);
+        angle = ((angle % step) + step) % step;
+        if (Math.floor(angle / (step/2)) % 2 === 1) angle = step - angle;
+        const sx = Math.round(cx + radius * Math.cos(angle));
+        const sy = Math.round(cy + radius * Math.sin(angle));
+        if (sx >= 0 && sx < W && sy >= 0 && sy < H) {
+          const di = (y*W+x)*4, si = (sy*W+sx)*4;
+          res[di]=d[si]; res[di+1]=d[si+1]; res[di+2]=d[si+2]; res[di+3]=d[si+3];
+        }
+      }
+    return new ImageData(res, W, H);
+  }
+
+  return new ImageData(d, W, H);
+}
+
+// ── Distortion ──
+function fxDistort(img, W, H, rand) {
+  const fx = S.fx;
+  const res = new Uint8ClampedArray(W * H * 4);
+  const src = img.data;
+  const freq = fx.waveFreq * 0.0628;
+  const ns = 0.006;
+  const wxa = fx.waveX / 100 * W * 0.12;
+  const wya = fx.waveY / 100 * H * 0.12;
+  const nda = fx.noiseDisplace / 100;
+  const sc  = fx.scatter / 100;
+
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      let sx = x, sy = y;
+      if (wxa) sx += Math.sin(y * freq) * wxa;
+      if (wya) sy += Math.sin(x * freq) * wya;
+      if (nda) {
+        sx += noise(x*ns*fx.waveFreq, y*ns*fx.waveFreq) * nda * W * 0.18;
+        sy += noise(x*ns*fx.waveFreq+100, y*ns*fx.waveFreq+100) * nda * H * 0.18;
+      }
+      if (sc) {
+        sx += (rand() - 0.5) * sc * W * 0.08;
+        sy += (rand() - 0.5) * sc * H * 0.08;
+      }
+      const ex = Math.max(0, Math.min(W-1, Math.round(sx)));
+      const ey = Math.max(0, Math.min(H-1, Math.round(sy)));
+      const di = (y*W+x)*4, si = (ey*W+ex)*4;
+      res[di]=src[si]; res[di+1]=src[si+1]; res[di+2]=src[si+2]; res[di+3]=src[si+3];
+    }
+  }
+  return new ImageData(res, W, H);
+}
+
+// ── RGB Split ──
+function fxRGBSplit(img, W, H) {
+  const amt  = S.fx.rgbSplit / 100;
+  const ang  = S.fx.rgbAngle * Math.PI / 180;
+  const dist = Math.round(amt * W * 0.1);
+  const res  = new Uint8ClampedArray(img.data);
+  const src  = img.data;
+  const ox = Math.round(Math.cos(ang) * dist);
+  const oy = Math.round(Math.sin(ang) * dist);
+
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const di = (y*W+x)*4;
+      // R channel: shift +direction
+      const rx = clamp01(x + ox, W), ry = clamp01(y + oy, H);
+      const ri = (ry*W+rx)*4;
+      // B channel: shift -direction
+      const bx = clamp01(x - ox, W), by = clamp01(y - oy, H);
+      const bi = (by*W+bx)*4;
+      res[di]   = src[ri];
+      res[di+1] = src[di+1];
+      res[di+2] = src[bi+2];
+    }
+  }
+  return new ImageData(res, W, H);
+}
+function clamp01(v, max) { return v < 0 ? 0 : v >= max ? max-1 : v; }
+
+// ── Pixel Slice ──
+function fxPixelSlice(img, W, H, rand) {
+  const amt = S.fx.pixelSlice / 100;
+  const res = new Uint8ClampedArray(img.data);
+  const src = img.data;
+  const n   = Math.floor(amt * 35) + 1;
+  for (let i = 0; i < n; i++) {
+    const y  = Math.floor(rand() * H);
+    const sh = Math.floor(rand() * 12) + 1;
+    const shift = Math.round((rand() - 0.5) * amt * W * 0.6);
+    for (let dy = 0; dy < sh && y+dy < H; dy++)
+      for (let x = 0; x < W; x++) {
+        const sx = ((x - shift) % W + W) % W;
+        const di = ((y+dy)*W+x)*4, si = ((y+dy)*W+sx)*4;
+        res[di]=src[si]; res[di+1]=src[si+1]; res[di+2]=src[si+2]; res[di+3]=src[si+3];
+      }
+  }
+  return new ImageData(res, W, H);
+}
+
+// ── Databend ──
+function fxDatabend(img, W, H, rand) {
+  const amt = S.fx.databend / 100;
+  const res = new Uint8ClampedArray(img.data);
+  const n   = Math.floor(amt * 8) + 1;
+  for (let i = 0; i < n; i++) {
+    const start = Math.floor(rand() * res.length / 4) * 4;
+    const len   = Math.floor(rand() * amt * W * H * 0.05) * 4;
+    const shift = Math.floor((rand() - 0.5) * amt * W * 4);
+    for (let j = 0; j < len; j++) {
+      const from = start + j;
+      const to   = ((start + j + shift) % res.length + res.length) % res.length;
+      if (from < res.length && to < res.length && from % 4 !== 3 && to % 4 !== 3)
+        res[to] = res[from];
+    }
+  }
+  return new ImageData(res, W, H);
+}
+
+// ── Scanlines ──
+function fxScanlines(img, W, H) {
+  const res = new Uint8ClampedArray(img.data);
+  const amt = S.fx.scanlines / 100;
+  const gap = Math.max(2, Math.round((1 - amt * 0.7) * 5));
+  const dark = 1 - amt * 0.85;
+  for (let y = 0; y < H; y += gap)
+    for (let x = 0; x < W; x++) {
+      const i = (y*W+x)*4;
+      res[i]  = res[i]*dark|0; res[i+1]=res[i+1]*dark|0; res[i+2]=res[i+2]*dark|0;
+    }
+  return new ImageData(res, W, H);
+}
+
+// ── Static Noise ──
+function fxNoise(img, W, H, rand) {
+  const res = new Uint8ClampedArray(img.data);
+  const amt = S.fx.staticNoise / 100;
+  for (let i = 0; i < res.length; i += 4) {
+    const n = (rand() - 0.5) * 255 * amt;
+    res[i]  =clamp(res[i]+n|0); res[i+1]=clamp(res[i+1]+n|0); res[i+2]=clamp(res[i+2]+n|0);
+  }
+  return new ImageData(res, W, H);
+}
+
+// ── HSL + Brightness/Contrast ──
+function fxHSLBC(img, W, H) {
+  const res = new Uint8ClampedArray(img.data);
+  const hShift = S.fx.hueShift / 360;
+  const sMul   = S.fx.saturation / 100;
+  const bMul   = S.fx.brightness / 100;
+  const con    = S.fx.contrast / 100;
+
+  for (let i = 0; i < res.length; i += 4) {
+    let [h, sat, l] = rgbToHsl(res[i], res[i+1], res[i+2]);
+    h   = (h + hShift) % 1;
+    sat = Math.min(1, sat * sMul);
+    const [r, g, b] = hslToRgb(h, sat, l);
+    // brightness & contrast
+    res[i]  = clamp(((r * bMul - 128) * con + 128)|0);
+    res[i+1]= clamp(((g * bMul - 128) * con + 128)|0);
+    res[i+2]= clamp(((b * bMul - 128) * con + 128)|0);
+  }
+  return new ImageData(res, W, H);
+}
+
+// ── Invert ──
+function fxInvert(img, W, H) {
+  const res = new Uint8ClampedArray(img.data);
+  const t   = S.fx.invert / 100;
+  for (let i = 0; i < res.length; i += 4) {
+    res[i]  = (res[i]   + (255-2*res[i])*t)|0;
+    res[i+1]= (res[i+1] + (255-2*res[i+1])*t)|0;
+    res[i+2]= (res[i+2] + (255-2*res[i+2])*t)|0;
+  }
+  return new ImageData(res, W, H);
+}
+
+// ── Bit Crush ──
+function fxBitCrush(img, W, H) {
+  const res = new Uint8ClampedArray(img.data);
+  const step = 256 / Math.pow(2, 8 - S.fx.bitCrush);
+  for (let i = 0; i < res.length; i += 4) {
+    res[i]  = (Math.floor(res[i]  /step)*step)|0;
+    res[i+1]= (Math.floor(res[i+1]/step)*step)|0;
+    res[i+2]= (Math.floor(res[i+2]/step)*step)|0;
+  }
+  return new ImageData(res, W, H);
+}
+
+// ── Duotone ──
+function fxDuotone(img, W, H) {
+  const res = new Uint8ClampedArray(img.data);
+  const t   = S.fx.duotone / 100;
+  const [ar,ag,ab] = S.duoA;
+  const [br,bg,bb] = S.duoB;
+  for (let i = 0; i < res.length; i += 4) {
+    const lum = (res[i]*0.299 + res[i+1]*0.587 + res[i+2]*0.114) / 255;
+    const dr  = ar + (br-ar)*lum, dg = ag + (bg-ag)*lum, db = ab + (bb-ab)*lum;
+    res[i]  = (res[i]   + (dr-res[i])  *t)|0;
+    res[i+1]= (res[i+1] + (dg-res[i+1])*t)|0;
+    res[i+2]= (res[i+2] + (db-res[i+2])*t)|0;
+  }
+  return new ImageData(res, W, H);
+}
+
+// ── HSL helpers ──
+function rgbToHsl(r,g,b) {
+  r/=255;g/=255;b/=255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b);
+  let h,s,l=(max+min)/2;
+  if (max===min) { h=s=0; } else {
+    const d=max-min;
+    s=l>0.5?d/(2-max-min):d/(max+min);
+    switch(max) {
+      case r: h=((g-b)/d+(g<b?6:0))/6; break;
+      case g: h=((b-r)/d+2)/6; break;
+      case b: h=((r-g)/d+4)/6; break;
+    }
+  }
+  return [h,s,l];
+}
+function hslToRgb(h,s,l) {
+  if (s===0) { const v=l*255|0; return [v,v,v]; }
+  const q=l<0.5?l*(1+s):l+s-l*s, p=2*l-q;
+  const hue2=(p,q,t)=>{
+    if(t<0)t+=1;if(t>1)t-=1;
+    if(t<1/6)return p+(q-p)*6*t;
+    if(t<1/2)return q;
+    if(t<2/3)return p+(q-p)*(2/3-t)*6;
+    return p;
+  };
+  return [hue2(p,q,h+1/3)*255|0, hue2(p,q,h)*255|0, hue2(p,q,h-1/3)*255|0];
+}
+
+// ═══════════════════════════════════════════════════
+// EFFECT DOTS
+// ═══════════════════════════════════════════════════
+function updateDots() {
+  const fx = S.fx;
+  const symOn   = fx.mirrorH||fx.mirrorV||fx.kaleidoscope||fx.gridTile>1;
+  const distOn  = fx.waveX||fx.waveY||fx.noiseDisplace||fx.scatter;
+  const glitchOn= fx.rgbSplit||fx.pixelSlice||fx.scanlines||fx.staticNoise||fx.databend;
+  const colorOn = fx.hueShift||fx.saturation!==100||fx.brightness!==100||fx.contrast!==100||fx.invert||fx.bitCrush||fx.duotone;
+  toggle('dot-sym',   !!symOn);
+  toggle('dot-dist',  !!distOn);
+  toggle('dot-glitch',!!glitchOn);
+  toggle('dot-color', !!colorOn);
+}
+function toggle(id, on) {
+  document.getElementById(id).classList.toggle('on', on);
+}
+
+// ═══════════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════════
+async function exportPNG() {
+  const overlay = document.getElementById('proc-overlay');
+  overlay.classList.add('show');
+  await new Promise(r => setTimeout(r, 30));
+
+  // Apply effects at full src resolution
+  const W = S.W, H = S.H;
+  const full = new OffscreenCanvas(W, H);
+  const fctx = full.getContext('2d', { willReadFrequently: true });
+  fctx.drawImage(srcCvs, 0, 0);
+  if (S.pendingImg) {
+    const scale = document.getElementById('img-scale').value / 100;
+    const imgW = S.pendingImg.width * scale;
+    const imgH = S.pendingImg.height * scale;
+    const posX = (document.getElementById('img-x').value / 100) * (W - imgW);
+    const posY = (document.getElementById('img-y').value / 100) * (H - imgH);
+    fctx.drawImage(S.pendingImg, posX, posY, imgW, imgH);
+  }
+
+  let img = fctx.getImageData(0, 0, W, H);
+  const rand = mkRand(S.seed);
+  const fx = S.fx;
+
+  img = fxSymmetry(img, W, H);
+  if (fx.waveX||fx.waveY||fx.noiseDisplace||fx.scatter) img = fxDistort(img, W, H, rand);
+  if (fx.rgbSplit>0)     img = fxRGBSplit(img, W, H);
+  if (fx.pixelSlice>0)   img = fxPixelSlice(img, W, H, rand);
+  if (fx.databend>0)     img = fxDatabend(img, W, H, rand);
+  if (fx.scanlines>0)    img = fxScanlines(img, W, H);
+  if (fx.staticNoise>0)  img = fxNoise(img, W, H, rand);
+  if (fx.hueShift||fx.saturation!==100||fx.brightness!==100||fx.contrast!==100) img = fxHSLBC(img, W, H);
+  if (fx.invert>0)       img = fxInvert(img, W, H);
+  if (fx.bitCrush>0)     img = fxBitCrush(img, W, H);
+  if (fx.duotone>0)      img = fxDuotone(img, W, H);
+
+  fctx.putImageData(img, 0, 0);
+  const blob = await full.convertToBlob({ type: 'image/png' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `glitch-${Date.now()}.png`; a.click();
+  URL.revokeObjectURL(url);
+  overlay.classList.remove('show');
+}
+
+async function exportSVG() {
+  const overlay = document.getElementById('proc-overlay');
+  overlay.classList.add('show');
+  await new Promise(r => setTimeout(r, 30));
+
+  // Export: PNG embedded in scalable SVG container
+  const W = S.W, H = S.H;
+  const full = new OffscreenCanvas(W, H);
+  const fctx = full.getContext('2d', { willReadFrequently: true });
+  fctx.drawImage(srcCvs, 0, 0);
+  if (S.pendingImg) {
+    const scale = document.getElementById('img-scale').value / 100;
+    const imgW = S.pendingImg.width * scale;
+    const imgH = S.pendingImg.height * scale;
+    const posX = (document.getElementById('img-x').value / 100) * (W - imgW);
+    const posY = (document.getElementById('img-y').value / 100) * (H - imgH);
+    fctx.drawImage(S.pendingImg, posX, posY, imgW, imgH);
+  }
+
+  let img = fctx.getImageData(0, 0, W, H);
+  const rand = mkRand(S.seed);
+  const fx = S.fx;
+  img = fxSymmetry(img, W, H);
+  if (fx.waveX||fx.waveY||fx.noiseDisplace||fx.scatter) img = fxDistort(img, W, H, rand);
+  if (fx.rgbSplit>0)    img = fxRGBSplit(img, W, H);
+  if (fx.pixelSlice>0)  img = fxPixelSlice(img, W, H, rand);
+  if (fx.databend>0)    img = fxDatabend(img, W, H, rand);
+  if (fx.scanlines>0)   img = fxScanlines(img, W, H);
+  if (fx.staticNoise>0) img = fxNoise(img, W, H, rand);
+  if (fx.hueShift||fx.saturation!==100||fx.brightness!==100||fx.contrast!==100) img = fxHSLBC(img, W, H);
+  if (fx.invert>0)      img = fxInvert(img, W, H);
+  if (fx.bitCrush>0)    img = fxBitCrush(img, W, H);
+  if (fx.duotone>0)     img = fxDuotone(img, W, H);
+  fctx.putImageData(img, 0, 0);
+
+  const blob   = await full.convertToBlob({ type: 'image/png' });
+  const reader = new FileReader();
+  reader.onload = () => {
+    const dataURL = reader.result;
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  <image width="${W}" height="${H}" xlink:href="${dataURL}"/>
+</svg>`;
+    const svgBlob = new Blob([svg], { type: 'image/svg+xml' });
+    const url     = URL.createObjectURL(svgBlob);
+    const a       = document.createElement('a');
+    a.href = url; a.download = `glitch-${Date.now()}.svg`; a.click();
+    URL.revokeObjectURL(url);
+    overlay.classList.remove('show');
+  };
+  reader.readAsDataURL(blob);
+}
+
+// ═══════════════════════════════════════════════════
+// PRESETS
+// ═══════════════════════════════════════════════════
+function savePreset(name) {
+  S.presets.push({ name, fx: {...S.fx}, duoA:[...S.duoA], duoB:[...S.duoB] });
+  localStorage.setItem('gs-presets', JSON.stringify(S.presets));
+  renderPresets();
+}
+
+function loadPreset(i) {
+  const p = S.presets[i]; if (!p) return;
+  Object.assign(S.fx, p.fx);
+  S.duoA = [...p.duoA]; S.duoB = [...p.duoB];
+  document.querySelectorAll('.efx').forEach(el => {
+    el.value = S.fx[el.dataset.k] ?? 0;
+    updateVal(el);
+  });
+  document.getElementById('duotone-a').value = rgbToHex(S.duoA);
+  document.getElementById('duotone-b').value = rgbToHex(S.duoB);
+  applyFx();
+}
+
+function deletePreset(i) {
+  S.presets.splice(i, 1);
+  localStorage.setItem('gs-presets', JSON.stringify(S.presets));
+  renderPresets();
+}
+
+function renderPresets() {
+  const list = document.getElementById('preset-list');
+  const msg  = document.getElementById('no-presets');
+  list.innerHTML = '';
+  msg.style.display = S.presets.length ? 'none' : 'block';
+  S.presets.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'preset-item';
+    div.innerHTML = `<span class="preset-name">${p.name}</span><span class="preset-del">×</span>`;
+    div.querySelector('.preset-name').onclick = () => loadPreset(i);
+    div.querySelector('.preset-del').onclick  = e => { e.stopPropagation(); deletePreset(i); };
+    list.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
+function hexToRGB(h) {
+  return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+}
+function rgbToHex([r,g,b]) {
+  return '#' + [r,g,b].map(v => (v|0).toString(16).padStart(2,'0')).join('');
+}
+function updateVal(el) {
+  const k = el.dataset.k;
+  const v = parseFloat(el.value);
+  const id = `v-${k}`;
+  const span = document.getElementById(id);
+  if (!span) return;
+  if (k === 'mirrorH' || k === 'mirrorV') span.textContent = v ? 'ON' : 'OFF';
+  else span.textContent = v;
+}
+
+// ═══════════════════════════════════════════════════
+// EVENT WIRING
+// ═══════════════════════════════════════════════════
+
+// Canvas size
+document.getElementById('size-sel').addEventListener('change', function() {
+  const [w,h] = this.value.split(',').map(Number);
+  if (!confirm(`캔버스를 ${w}×${h}로 변경합니다. 현재 내용이 초기화됩니다.`)) {
+    this.value = `${S.W},${S.H}`; return;
+  }
+  initCanvas(w, h);
+});
+
+// Tool buttons
+document.querySelectorAll('.tbtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    S.tool = btn.dataset.tool;
+    dispCvs.style.cursor = S.tool === 'fill' ? 'cell' : 'crosshair';
+  });
+});
+
+// Brush controls
+document.getElementById('brush-color').addEventListener('input', function() { S.strokeColor = this.value; });
+document.getElementById('fill-color').addEventListener('input',  function() { S.fillColor   = this.value; });
+document.getElementById('fill-check').addEventListener('change', function() { S.useFill     = this.checked; });
+document.getElementById('brush-size').addEventListener('input', function() {
+  S.brushSize = +this.value;
+  document.getElementById('v-brush-size').textContent = this.value;
+});
+document.getElementById('brush-opacity').addEventListener('input', function() {
+  S.brushOpacity = this.value / 100;
+  document.getElementById('v-brush-opacity').textContent = this.value;
+});
+
+// Effect sliders
+document.querySelectorAll('.efx').forEach(el => {
+  el.addEventListener('input', function() {
+    S.fx[this.dataset.k] = parseFloat(this.value);
+    updateVal(this);
+    applyFx();
+  });
+});
+
+// Duotone colors
+document.getElementById('duotone-a').addEventListener('input', function() {
+  S.duoA = hexToRGB(this.value); if (S.fx.duotone > 0) applyFx();
+});
+document.getElementById('duotone-b').addEventListener('input', function() {
+  S.duoB = hexToRGB(this.value); if (S.fx.duotone > 0) applyFx();
+});
+
+// New seed
+document.getElementById('btn-new-seed').addEventListener('click', () => {
+  S.seed = Math.floor(Math.random() * 99999);
+  document.getElementById('seed-display').textContent = S.seed;
+  applyFx();
+});
+
+// Header buttons
+document.getElementById('btn-undo').addEventListener('click', undo);
+document.getElementById('btn-redo').addEventListener('click', redo);
+document.getElementById('btn-reset').addEventListener('click', resetCanvas);
+document.getElementById('btn-png').addEventListener('click', exportPNG);
+document.getElementById('btn-svg').addEventListener('click', exportSVG);
+
+// Preset save
+document.getElementById('btn-preset-save').addEventListener('click', () => {
+  document.getElementById('modal-bg').classList.add('show');
+  document.getElementById('modal-input').value = '';
+  document.getElementById('modal-input').focus();
+});
+document.getElementById('modal-cancel').addEventListener('click', () => {
+  document.getElementById('modal-bg').classList.remove('show');
+});
+document.getElementById('modal-ok').addEventListener('click', () => {
+  const name = document.getElementById('modal-input').value.trim() || `Preset ${S.presets.length + 1}`;
+  savePreset(name);
+  document.getElementById('modal-bg').classList.remove('show');
+});
+document.getElementById('modal-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter')  document.getElementById('modal-ok').click();
+  if (e.key === 'Escape') document.getElementById('modal-cancel').click();
+});
+
+// Image upload
+document.getElementById('img-upload').addEventListener('change', function() {
+  const file = this.files[0]; if (!file) return;
+  const img = new Image();
+  img.onload = () => { S.pendingImg = img; applyFx(); };
+  img.src = URL.createObjectURL(file);
+  this.value = '';
+});
+document.getElementById('img-scale').addEventListener('input', function() {
+  document.getElementById('v-img-scale').textContent = this.value;
+  if (S.pendingImg) applyFx();
+});
+document.getElementById('img-x').addEventListener('input', function() {
+  document.getElementById('v-img-x').textContent = this.value;
+  if (S.pendingImg) applyFx();
+});
+document.getElementById('img-y').addEventListener('input', function() {
+  document.getElementById('v-img-y').textContent = this.value;
+  if (S.pendingImg) applyFx();
+});
+document.getElementById('btn-stamp').addEventListener('click', () => {
+  if (!S.pendingImg) return;
+  const scale = document.getElementById('img-scale').value / 100;
+  const imgW = S.pendingImg.width * scale;
+  const imgH = S.pendingImg.height * scale;
+  const posX = (document.getElementById('img-x').value / 100) * (S.W - imgW);
+  const posY = (document.getElementById('img-y').value / 100) * (S.H - imgH);
+  srcCtx.globalAlpha = S.brushOpacity;
+  srcCtx.drawImage(S.pendingImg, posX, posY, imgW, imgH);
+  srcCtx.globalAlpha = 1;
+  S.pendingImg = null;
+  pushUndo(); applyFx();
+});
+
+// Canvas mouse / touch
+dispCvs.addEventListener('mousedown',  e => startDraw(e.clientX, e.clientY));
+dispCvs.addEventListener('mousemove',  e => moveDraw(e.clientX, e.clientY));
+dispCvs.addEventListener('mouseup',    endDraw);
+dispCvs.addEventListener('mouseleave', endDraw);
+
+dispCvs.addEventListener('touchstart', e => { e.preventDefault(); startDraw(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+dispCvs.addEventListener('touchmove',  e => { e.preventDefault(); moveDraw(e.touches[0].clientX, e.touches[0].clientY);  }, { passive: false });
+dispCvs.addEventListener('touchend',   endDraw);
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+  if (mod && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+});
+
+// Panel section toggle
+document.querySelectorAll('.psec-head').forEach(h => {
+  h.addEventListener('click', () => h.parentElement.classList.toggle('closed'));
+});
+
+// Resize
+window.addEventListener('resize', () => { fitCanvas(); applyFx(); });
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+(function init() {
+  try {
+    const saved = localStorage.getItem('gs-presets');
+    if (saved) S.presets = JSON.parse(saved);
+  } catch(_) {}
+  renderPresets();
+  initCanvas(1080, 1080);
+})();
+</script>
+</body>
+</html>
